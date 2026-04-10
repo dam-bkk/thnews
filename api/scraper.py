@@ -99,7 +99,7 @@ async def _get_body(url: str) -> str:
     return body
 
 
-async def stream_article(url: str, lang: str) -> AsyncGenerator[str, None]:
+async def stream_article(url: str, lang: str, fallback: str = "") -> AsyncGenerator[str, None]:
     """Yield SSE events: start → chunk (per paragraph) → done."""
 
     def event(data: dict) -> str:
@@ -107,8 +107,12 @@ async def stream_article(url: str, lang: str) -> AsyncGenerator[str, None]:
 
     body_orig = await _get_body(url)
     if not body_orig:
-        yield event({"type": "error", "message": "Could not extract article content."})
-        return
+        if fallback:
+            # Use RSS summary as fallback — still translate it
+            body_orig = fallback
+        else:
+            yield event({"type": "error", "message": "Could not extract article content."})
+            return
 
     paragraphs = _split_paragraphs(body_orig)
     total = len(paragraphs)

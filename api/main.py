@@ -150,9 +150,13 @@ async def get_status():
 
 
 @app.get("/api/article/stream")
-async def stream_full_article(url: str = Query(...), lang: str = Query("th")):
+async def stream_full_article(
+    url: str = Query(...),
+    lang: str = Query("th"),
+    fallback: str = Query(""),
+):
     return StreamingResponse(
-        stream_article(url, lang),
+        stream_article(url, lang, fallback=fallback),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

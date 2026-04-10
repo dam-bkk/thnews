@@ -27,7 +27,8 @@ export default function ArticleModal({
   const esRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const url = `/api/article/stream?url=${encodeURIComponent(article.url)}&lang=${article.lang}`;
+    const fallback = article.summary_orig || article.summary_en || "";
+    const url = `/api/article/stream?url=${encodeURIComponent(article.url)}&lang=${article.lang}&fallback=${encodeURIComponent(fallback)}`;
     const es = new EventSource(url);
     esRef.current = es;
 

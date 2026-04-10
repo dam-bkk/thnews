@@ -57,6 +57,14 @@ def _parse_date(entry) -> str:
 
 
 def _fetch_feed_sync(url: str):
+    # Use httpx to handle cross-domain redirects that feedparser can't follow
+    try:
+        r = httpx.get(url, follow_redirects=True, timeout=12,
+                      headers={"User-Agent": "Mozilla/5.0 (compatible; NewsBot/1.0)"})
+        if r.status_code == 200:
+            return feedparser.parse(r.text)
+    except Exception:
+        pass
     return feedparser.parse(url, request_headers={"User-Agent": "Mozilla/5.0"})
 
 

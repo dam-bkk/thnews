@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import html
 import logging
 import re
 import httpx
@@ -16,7 +17,9 @@ _HEADERS = {
 
 
 def _clean(text: str) -> str:
-    return " ".join(text.split()).replace("&nbsp;", " ").replace("&amp;", "&")
+    # Decode HTML entities (&#8230; → …, &amp; → &, etc.) before translating
+    decoded = html.unescape(html.unescape(text))  # double-unescape for double-encoded entities
+    return " ".join(decoded.split())
 
 
 async def _call(text: str, source: str) -> str:

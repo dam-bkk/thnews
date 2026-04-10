@@ -1,4 +1,5 @@
 import asyncio
+import html
 import json
 import re
 from typing import AsyncGenerator
@@ -108,8 +109,8 @@ async def stream_article(url: str, lang: str, fallback: str = "") -> AsyncGenera
     body_orig = await _get_body(url)
     if not body_orig:
         if fallback:
-            # Use RSS summary as fallback — still translate it
-            body_orig = fallback
+            # Decode HTML entities from RSS summary before using as fallback
+            body_orig = html.unescape(html.unescape(fallback))
         else:
             yield event({"type": "error", "message": "Could not extract article content."})
             return

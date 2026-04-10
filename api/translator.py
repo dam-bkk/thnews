@@ -16,7 +16,7 @@ _HEADERS = {
 
 
 def _clean(text: str) -> str:
-    return " ".join(text.split()).replace("&nbsp;", " ").replace("&amp;", "&")[:500]
+    return " ".join(text.split()).replace("&nbsp;", " ").replace("&amp;", "&")
 
 
 async def _call(text: str, source: str) -> str:

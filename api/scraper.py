@@ -2,22 +2,48 @@ import asyncio
 import json
 import re
 from typing import AsyncGenerator
+import httpx
 import trafilatura
 from .translator import translate
 
 # cache scraped raw text: url -> str
 _body_cache: dict[str, str] = {}
 
+_FETCH_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7",
+    # No Accept-Encoding: some Thai sites return unextractable compressed responses
+}
+
 
 def _fetch_and_extract(url: str) -> str:
-    downloaded = trafilatura.fetch_url(url)
-    if not downloaded:
-        return ""
+    try:
+        with httpx.Client(
+            timeout=20,
+            headers=_FETCH_HEADERS,
+            follow_redirects=True,
+        ) as client:
+            r = client.get(url)
+            r.raise_for_status()
+            html = r.text
+    except Exception:
+        # Fallback to trafilatura's own fetcher
+        html = trafilatura.fetch_url(url)
+        if not html:
+            return ""
+
     text = trafilatura.extract(
-        downloaded,
+        html,
         include_comments=False,
         include_tables=False,
         no_fallback=False,
+        favor_precision=False,
+        favor_recall=True,
     )
     return text or ""
 

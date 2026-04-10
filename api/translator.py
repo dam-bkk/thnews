@@ -31,7 +31,7 @@ async def _call(text: str, source: str) -> str:
         match = re.search(r'class="result-container">([^<]+)', r.text)
         if not match:
             raise ValueError("No translation in response")
-        return match.group(1).strip()
+        return html.unescape(match.group(1).strip())
 
 
 async def translate(text: str, source: str = "th") -> str:

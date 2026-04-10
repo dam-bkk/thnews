@@ -77,6 +77,7 @@ export default function ArticleModal({
         display: "flex", alignItems: "center", justifyContent: "center",
         padding: 24,
       }}
+      className="modal-overlay"
     >
       <div
         onClick={e => e.stopPropagation()}
@@ -89,6 +90,7 @@ export default function ArticleModal({
           display: "flex", flexDirection: "column", overflow: "hidden",
           fontFamily: "'Inter', sans-serif",
         }}
+        className="modal-panel"
       >
         {/* Header */}
         <div style={{ padding: "20px 22px 16px", borderBottom: "1px solid var(--divider)", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -205,6 +207,14 @@ export default function ArticleModal({
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
         @keyframes pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+        @media (max-width: 600px) {
+          .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+          .modal-panel {
+            border-radius: 20px 20px 0 0 !important;
+            max-height: 92dvh !important;
+            max-width: 100% !important;
+          }
+        }
       `}</style>
     </div>
   );

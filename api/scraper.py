@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 from typing import AsyncGenerator
 import trafilatura
 from .translator import translate
@@ -21,7 +22,7 @@ def _fetch_and_extract(url: str) -> str:
     return text or ""
 
 
-_TRANSLATE_LIMIT = 420  # safe under MyMemory's 500-char cap
+_TRANSLATE_LIMIT = 1500  # Google mobile endpoint handles up to ~2000 chars
 
 
 def _split_paragraphs(text: str) -> list[str]:
@@ -29,23 +30,29 @@ def _split_paragraphs(text: str) -> list[str]:
     # Trafilatura uses single \n between paragraphs — treat every non-empty line as a paragraph
     raw = [l.strip() for l in text.splitlines() if l.strip() and len(l.strip()) > 3]
 
-    # Further chunk any line that exceeds the translate limit (split on sentence boundary)
+    # Further chunk any line that exceeds the translate limit
+    import re
     result = []
     for line in raw:
         if len(line) <= _TRANSLATE_LIMIT:
             result.append(line)
         else:
-            # Split on sentence-ending punctuation
-            import re
-            sentences = re.split(r'(?<=[.!?।。\u0e0a\u0e4f])\s+', line)
+            # Split on punctuation — Thai ๆ/ฯ have no following space so use \s* not \s+
+            parts = re.split(r'(?<=[.!?\u0e46\u0e2f\u104a\u104b])\s*', line)
             chunk = ""
-            for sent in sentences:
-                if len(chunk) + len(sent) + 1 > _TRANSLATE_LIMIT:
+            for part in parts:
+                if not part:
+                    continue
+                if len(chunk) + len(part) > _TRANSLATE_LIMIT:
                     if chunk:
                         result.append(chunk.strip())
-                    chunk = sent
+                    # Hard-cut if a single part still exceeds limit
+                    while len(part) > _TRANSLATE_LIMIT:
+                        result.append(part[:_TRANSLATE_LIMIT])
+                        part = part[_TRANSLATE_LIMIT:]
+                    chunk = part
                 else:
-                    chunk = (chunk + " " + sent).strip() if chunk else sent
+                    chunk = chunk + part if chunk else part
             if chunk:
                 result.append(chunk.strip())
     return result

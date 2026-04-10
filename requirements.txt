@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+feedparser
+httpx
+deep-translator
+aiosqlite
+apscheduler
+python-dotenv
+trafilatura

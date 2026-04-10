@@ -169,7 +169,7 @@ async def manual_refresh():
 
 
 # Serve frontend — must be last so /api routes take priority
-_public = os.path.join(os.path.dirname(__file__), "..", "public")
+_public = os.getenv("PUBLIC_PATH", os.path.join(os.path.dirname(__file__), "..", "public"))
 if os.path.isdir(_public):
     from fastapi.responses import FileResponse
 
